@@ -1,0 +1,76 @@
+version: '3.8'
+
+services:
+  api:
+    build: ./backend
+    container_name: laravel_app
+    ports:
+      - "8000:8000"
+    environment:
+      - APP_ENV=local
+      - DB_HOST=db
+      - DB_DATABASE=fpc
+      - DB_USERNAME=root
+      - DB_PASSWORD=root
+    depends_on:
+      - db
+      - searcher
+    volumes:
+      - ./backend:/var/www/html
+    networks:
+      - fpc_network
+
+  frontend:
+    build: ./frontend
+    container_name: react_app
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - fpc_network
+
+  db:
+    image: mysql:8
+    container_name: mysql_db
+    restart: always
+    environment:
+      MYSQL_DATABASE: fpc
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3306:3306"
+    networks:
+      - fpc_network
+
+  searcher:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.7.0
+    container_name: elastic_search
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.security.enabled=false  # Disable authentication
+    ports:
+      - "9200:9200"
+    networks:
+      - fpc_network
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx_proxy
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./frontend/build:/usr/share/nginx/html # Serve built React app
+    depends_on:
+      - api
+      - frontend
+    networks:
+      - fpc_network
+
+networks:
+  fpc_network:
+    driver: bridge
