@@ -84,10 +84,10 @@ docker-compose logs -f
 ```sh
 docker-compose restart
 ```
-## Ensure ports 8000 (backend) and 3000 (frontend) are not occupied.
+- Ensure ports 8000 (backend) and 3000 (frontend) are not occupied.
 
 ## License
 
-## This project is licensed under the MIT License.
+- This project is licensed under the MIT License.
 
 ## Enjoy using Customer CRUD App! 🚀
